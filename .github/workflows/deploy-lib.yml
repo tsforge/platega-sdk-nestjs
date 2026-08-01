@@ -1,0 +1,112 @@
+name: Deploy lib
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  notify-start:
+    name: Notify deploy started
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram message
+        run: |
+          TEXT=$(cat <<'EOF'
+          🚀 *Platega SDK NestJS — публикация начата*
+
+          📦 Пакет: `@tsforge7/platega-sdk-nestjs`
+          _NestJS-модуль для платёжной системы Platega: обёртка над platega-sdk с DI и декоратором @InjectPlatega()_
+
+          🏷 Версия: `${{ github.ref_name }}`
+          👤 Автор: ${{ github.actor }}
+          🔀 Коммит: `${{ github.sha }}`
+
+          [Репозиторий](https://github.com/${{ github.repository }}) • [Ход сборки](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          )
+          curl -sS "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d message_thread_id="${{ secrets.TELEGRAM_THREAD_ID }}" \
+            -d parse_mode="Markdown" \
+            -d disable_web_page_preview=true \
+            --data-urlencode "text=${TEXT}"
+
+  build:
+    name: Lint, build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish package on NPM
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  notify-success:
+    name: Notify published
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram message
+        run: |
+          TEXT=$(cat <<'EOF'
+          ✅ *Platega SDK NestJS ${{ github.ref_name }} опубликован в npm*
+
+          📦 `npm install @tsforge7/platega-sdk-nestjs@${{ github.ref_name }}`
+
+          👤 Автор релиза: ${{ github.actor }}
+          🔀 Коммит: `${{ github.sha }}`
+
+          [Пакет в npm](https://www.npmjs.com/package/@tsforge7/platega-sdk-nestjs) • [Репозиторий](https://github.com/${{ github.repository }})
+          EOF
+          )
+          curl -sS "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d message_thread_id="${{ secrets.TELEGRAM_THREAD_ID }}" \
+            -d parse_mode="Markdown" \
+            -d disable_web_page_preview=true \
+            --data-urlencode "text=${TEXT}"
+
+  notify-error:
+    name: Notify failure
+    needs: [build]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send error notification
+        run: |
+          TEXT=$(cat <<'EOF'
+          ❌ *Platega SDK NestJS ${{ github.ref_name }} — публикация упала*
+
+          Один из шагов (линт / сборка / publish) завершился с ошибкой.
+
+          👤 Автор: ${{ github.actor }}
+          🔀 Коммит: `${{ github.sha }}`
+
+          [Смотреть логи](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          )
+          curl -sS "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d message_thread_id="${{ secrets.TELEGRAM_THREAD_ID }}" \
+            -d parse_mode="Markdown" \
+            -d disable_web_page_preview=true \
+            --data-urlencode "text=${TEXT}"

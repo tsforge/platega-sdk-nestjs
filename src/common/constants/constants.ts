@@ -1,0 +1,1 @@
+export const MODULE_NAME = 'PLATEGA_SDK_NESTJS';

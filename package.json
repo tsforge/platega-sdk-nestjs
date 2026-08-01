@@ -1,0 +1,59 @@
+{
+    "name": "@tsforge7/platega-sdk-nestjs",
+    "version": "0.0.1",
+    "main": "build/index.js",
+    "types": "build/index.d.ts",
+    "files": [
+        "build"
+    ],
+    "license": "ISC",
+    "description": "platega sdk for nestjs",
+    "scripts": {
+        "prepublish": "rm -rf build && tsc",
+        "build": "tsc",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "format": "prettier --write \"src/**/*.ts\" \"*.md\""
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/tsforge/platega-sdk-nestjs"
+    },
+    "homepage": "https://github.com/tsforge/platega-sdk-nestjs#readme",
+    "bugs": {
+        "url": "https://github.com/tsforge/platega-sdk-nestjs/issues"
+    },
+    "dependencies": {
+        "@nestjs/common": "^11.1.0",
+        "@nestjs/core": "^11.1.0"
+    },
+    "peerDependencies": {
+        "@tsforge7/platega-sdk": ">=0.1.7"
+    },
+    "author": "tsforge",
+    "engines": {
+        "node": ">=18"
+    },
+    "keywords": [
+        "sdk",
+        "typescript",
+        "api",
+        "client",
+        "network",
+        "nestJs",
+        "platega",
+        "platega-sdk",
+        "platega-sdk-nestjs"
+    ],
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@tsforge7/platega-sdk": "^0.1.7",
+        "@types/node": "^26.1.2",
+        "eslint": "^10.8.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-prettier": "^5.5.6",
+        "prettier": "^3.9.6",
+        "typescript": "6.0",
+        "typescript-eslint": "^8.65.0"
+    }
+}
